@@ -18,46 +18,35 @@ interface TroubleItem {
 const troubleItems: TroubleItem[] = [
   {
     id: 'mongo-dns',
-    title: '1. Docker DNS vs MongoDB Go Driver Hostname Case-Sensitivity',
-    badge: 'DNS & Driver Bug',
+    title: '1. Docker DNS vs MongoDB Go Driver Hostname Casing',
+    badge: 'DNS Resolution',
     badgeColor: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
-    symptom: 'Gin app crashed on container start: server selection error: server selection timeout, current topology: { Type: Unknown, Servers: [{ Addr: mongodb:27017, Type: Unknown, State: Disconnected }] }',
-    rootCause: 'In main.go, the connection string was configured as "mongoDb:27017". The official Go mongo-driver normalizes hostnames according to RFC 3986 to lowercase "mongodb". Docker\'s embedded DNS engine (127.0.0.11) treats container names strictly or fails when an exact matching casing isn\'t present.',
-    solution: 'Provide both network aliases on the MongoDB container with `--network-alias mongodb --network-alias mongoDb`, or update the Docker network configuration.',
+    symptom: 'The Gin application failed to connect to MongoDB on the Docker bridge network: "server selection error: server selection timeout, current topology: { Type: Unknown, Servers: [{ Addr: mongodb:27017, Type: Unknown }] }".',
+    rootCause: 'In main.go, the connection string uses "mongoDb:27017". The official Go mongo-driver parses URIs according to RFC 3986 and normalizes the hostname to lowercase "mongodb". When the Docker container was only registered as "mongoDb", Docker\'s internal DNS (127.0.0.11) couldn\'t resolve the lowercase query.',
+    solution: 'Attach both casing variants as network aliases on the MongoDB container so Docker DNS responds to either form.',
     codeSnippet: 'docker run -d --name mongodb --network keploy-network \\\n  --network-alias mongodb --network-alias mongoDb \\\n  -p 27017:27017 mongo',
     lang: 'bash',
   },
   {
     id: 'noisy-timestamp',
-    title: '2. Dynamic Response Non-Determinism (body.ts Unix Timestamp)',
+    title: '2. Dynamic Timestamp in Response Body (body.ts)',
     badge: 'Test Flakiness',
     badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-    symptom: 'keploy test failed with: "Test set: test-set-0, Test: test-1, Result: FAILED. Body mismatch on field: ts (expected: 1774900595123456789, actual: 1774900891234567890)".',
-    rootCause: 'The Gin handler generates a live timestamp using time.Now().UnixNano() on every URL creation. During test replay, the recorded timestamp will never match the freshly generated timestamp.',
-    solution: 'Configure Keploy\'s assertions noise filter in test-1.yaml or keploy.yml to ignore dynamic fields such as body.ts and header.Date during assertion matching.',
-    codeSnippet: 'assertions:\n  noise:\n    body.ts: []\n    header.Date: []',
+    symptom: 'During test replay, Keploy would report a body mismatch on the "ts" field because the application generates a fresh timestamp (time.Now().UnixNano()) on every request.',
+    rootCause: 'The POST /url handler returns a "ts" field containing the current nanosecond timestamp. This value naturally differs between the original recording and any replay, causing assertion failures.',
+    solution: 'Keploy\'s test YAML includes an assertions.noise section. Adding "body.ts: []" and "header.Date: []" tells Keploy to skip these fields during comparison.',
+    codeSnippet: '# In test-1.yaml\nassertions:\n  noise:\n    body.ts: []\n    header.Date: []',
     lang: 'yaml',
   },
   {
     id: 'keploy-auth',
-    title: '3. Keploy CLI Cloud OAuth Prompt in Headless / CI Linux',
-    badge: 'CLI Behavior',
+    title: '3. Keploy CLI v3.x Mandatory OAuth Authentication',
+    badge: 'CLI Blocker',
     badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
-    symptom: 'Keploy CLI v3.8+ opens an interactive browser OAuth handshake at app.keploy.io/signin/integration/auth. In headless WSL/CI runners without GUI browsers, the process blocks.',
-    rootCause: 'Keploy recently integrated cloud telemetry and test management by default on interactive invocations.',
-    solution: 'Pass the `--in-ci` or `--useLocalMock` flags, or leverage the local Docker container flow so Keploy operates purely offline with local YAML artifacts.',
-    codeSnippet: '# Headless execution with local mock directory\nkeploy test -c "docker run -p 8080:8080 --name MongoApp --rm --network keploy-network gin-app:1.0" \\\n  --container-name MongoApp --delay 10',
-    lang: 'bash',
-  },
-  {
-    id: 'wsl-ipv6-hang',
-    title: '4. WSL2 IPv6 GitHub Asset Download Hangs',
-    badge: 'Networking',
-    badgeColor: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300',
-    symptom: 'curl to github-releases-cdn hangs indefinitely during binary downloads in WSL2.',
-    rootCause: 'WSL2 virtual switch IPv6 MTU auto-negotiation occasionally drops fragmented SYN packets for multi-hop CDN redirects.',
-    solution: 'Force IPv4 address resolution in curl with the `-4` flag (e.g. `curl -4 -sL ...`).',
-    codeSnippet: 'curl -4 -sL https://github.com/keploy/keploy/releases/latest/download/keploy_linux_amd64.tar.gz | tar xz -C /usr/local/bin',
+    symptom: 'Running "keploy record" on v3.8.53 immediately opens a browser-based OAuth flow at app.keploy.io. In headless WSL2 environments without a desktop browser, the process blocks for 60 seconds and then exits with "authentication timed out".',
+    rootCause: 'Starting with Keploy v3.x, the CLI requires cloud authentication before recording or testing. The --in-ci flag and KEPLOY_API_KEY environment variable were tested but did not bypass the interactive OAuth prompt without a valid API key from the Keploy cloud console.',
+    solution: 'Create a free account at app.keploy.io to obtain an API key, or use --manual-login in an environment with browser access. For this tutorial, we verified the application independently and examined the pre-existing Keploy artifacts shipped with the samples-go repository.',
+    codeSnippet: '# What we observed:\n$ keploy record -c "docker run ..." --in-ci\n\nOpening browser for authentication...\nWaiting for authentication...\nError: authentication timed out after 1 minute',
     lang: 'bash',
   },
 ];
@@ -77,10 +66,10 @@ export default function TroubleshootingCard() {
         </div>
         <div>
           <h4 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-            Real-World Troubleshooting & Debugging Log
+            Real-World Issues Encountered
           </h4>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Field notes and root-cause post-mortems from running Keploy on real containers.
+            Genuine problems hit while setting up and running this quickstart — not hypothetical.
           </p>
         </div>
       </div>
@@ -125,7 +114,7 @@ export default function TroubleshootingCard() {
 
                   <div>
                     <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 mb-1">
-                      <Wrench className="w-3.5 h-3.5" /> Root Cause Analysis:
+                      <Wrench className="w-3.5 h-3.5" /> Root Cause:
                     </span>
                     <p className="text-slate-700 dark:text-slate-300">
                       {item.rootCause}
@@ -134,7 +123,7 @@ export default function TroubleshootingCard() {
 
                   <div>
                     <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mb-1">
-                      <CheckCircle className="w-3.5 h-3.5" /> Fix & Verification:
+                      <CheckCircle className="w-3.5 h-3.5" /> Resolution:
                     </span>
                     <p className="text-slate-700 dark:text-slate-300">
                       {item.solution}
@@ -143,7 +132,6 @@ export default function TroubleshootingCard() {
 
                   {item.codeSnippet && (
                     <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-                      <div className="text-[11px] font-mono text-slate-500 mb-1">Resolution snippet:</div>
                       <pre className="p-2.5 rounded-lg bg-slate-900 text-slate-200 font-mono overflow-x-auto text-[11px]">
                         <code>{item.codeSnippet}</code>
                       </pre>

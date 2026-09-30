@@ -1,115 +1,60 @@
 # Zero-Code Testing for Go with Keploy 🚀
 
 > **Keploy DevRel Candidate Technical Assignment**  
-> A beginner-friendly, deeply technical documentation tutorial built with **Next.js 14**, **MDX**, and **Tailwind CSS**.
+> A beginner-friendly documentation tutorial built with **Next.js 14**, **MDX**, and **Tailwind CSS**.
 
 ---
 
 ## 📖 Overview
 
-This repository contains a full static documentation website and hands-on guide documenting the experience of testing a Go microservice (`gin-mongo`) with [Keploy](https://github.com/keploy/keploy).
+This is a single-page static documentation website documenting the experience of testing a Go microservice (`gin-mongo`) with [Keploy](https://github.com/keploy/keploy).
 
-Rather than standard unit tests with heavy interface mocking (`gomock`), this guide demonstrates how Keploy operates at the Linux/Docker network wire layer using eBPF and socket proxying to record live API traffic and MongoDB `OpMsg` calls, replaying them with zero database dependencies in CI/CD.
+The tutorial explains what Keploy does, walks through the `gin-mongo` quickstart setup with Docker, examines the generated test artifacts (real YAML files from the samples-go repository), and documents genuine debugging challenges encountered along the way — including Docker DNS case-sensitivity, dynamic timestamp handling, and the v3.x CLI authentication requirement.
 
 ---
 
-## 🛠️ Tech Stack & Features
+## 🛠️ Tech Stack
 
 - **Framework:** Next.js 14 (App Router)
-- **Content:** MDX (`.mdx`) with React component integration
-- **Styling:** Tailwind CSS with custom glassmorphism & typography
-- **Theme:** Smooth Dark / Light Mode with persistence
-- **Syntax Highlighting:** Prism.js with one-click copy buttons
+- **Content:** MDX (`.mdx`) with embedded React components
+- **Styling:** Tailwind CSS with dark/light mode
+- **Syntax Highlighting:** Prism.js with copy-to-clipboard
 - **Interactive Components:**
-  - `<ArchitectureDiagram />`: Interactive toggle between Record & Replay wire flow
-  - `<TroubleshootingCard />`: Deep dive into real-world bugs (Docker DNS case-sensitivity, dynamic timestamp noise, CLI OAuth)
-  - `<TestReportTable />`: Execution evidence & verification metrics
-  - `<Callout />`: Custom alerts for tips, warnings, and gotchas
-  - `<TableOfContents />`: Active scroll spy sidebar
+  - `<ArchitectureDiagram />` — Toggle between Record & Replay modes
+  - `<TroubleshootingCard />` — Expandable cards for real issues encountered
+  - `<TestReportTable />` — Summary of actual generated test artifacts
+  - `<Callout />` — Tip, warning, danger, and info alerts
+  - `<CodeBlock />` — Syntax-highlighted code with copy button
+  - `<TableOfContents />` — Scroll-spy sidebar navigation
+  - `<ThemeToggle />` — Persistent dark/light mode
 
 ---
 
-## 🚀 Running the Documentation Website Locally
+## 🚀 Running Locally
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/<your-username>/keploy-go-docs.git
-cd keploy-go-docs
+# Clone this repository
+git clone https://github.com/<your-username>/keploy-go-tutorial.git
+cd keploy-go-tutorial
 
-# 2. Install dependencies
+# Install dependencies
 npm install
 
-# 3. Start local development server
+# Start dev server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
-To verify the production build:
 ```bash
+# Production build
 npm run build
 npm run start
 ```
 
 ---
 
-## 🧪 Reproducing the Keploy Quickstart Locally
-
-### 1. Set Up Docker Network & MongoDB
-```bash
-docker network create keploy-network
-
-# Note: Provide both casing aliases to prevent Go MongoDB driver DNS resolution failure
-docker run -d --name mongodb \
-  --network keploy-network \
-  --network-alias mongodb \
-  --network-alias mongoDb \
-  -p 27017:27017 \
-  mongo:6.0
-```
-
-### 2. Build the Application Image
-```bash
-git clone https://github.com/keploy/samples-go.git
-cd samples-go/gin-mongo
-docker build -t gin-app:1.0 .
-```
-
-### 3. Record Real Network Interactions
-```bash
-keploy record -c "docker run -p 8080:8080 --name MongoApp --rm --network keploy-network gin-app:1.0" \
-  --container-name MongoApp --build-delay 15
-```
-
-Send requests:
-```bash
-curl -X POST http://localhost:8080/url -H "Content-Type: application/json" -d '{"url":"https://keploy.io/devrel"}'
-curl -i http://localhost:8080/<generated-short-code>
-curl -i "http://localhost:8080/verify-email?email=devrel@keploy.io"
-```
-
-### 4. Replay Tests (Without MongoDB Running)
-```bash
-# Stop the database to prove mock isolation
-docker stop mongodb
-
-keploy test -c "docker run -p 8080:8080 --name MongoApp --rm --network keploy-network gin-app:1.0" \
-  --container-name MongoApp --delay 10
-```
-
----
-
-## 🔍 Key Engineering Gotchas Solved
-
-1. **Docker DNS vs MongoDB Go Driver Hostname Case Normalization:**
-   The Go driver RFC-normalizes `mongoDb:27017` to `mongodb`, causing Docker's internal DNS resolver to fail unless both network aliases are attached.
-2. **Dynamic Response Non-Determinism (`body.ts`):**
-   Timestamp noise filters configured via `assertions.noise` in `test-1.yaml` prevent test flakiness from nanosecond clock drift.
-3. **Headless / CI Execution:**
-   Automating Keploy in CI without browser OAuth prompts by running containerized flows and offline mock catalogs.
-
----
-
 ## 📄 Deliverables
-- **GitHub Repository:** Public source code
-- **Vercel Deployment:** Live static documentation site
+
+- **GitHub Repository:** _(this repo)_
+- **Vercel Deployment:** _(deploy via Vercel import)_

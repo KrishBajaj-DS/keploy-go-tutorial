@@ -10,17 +10,17 @@ interface TocItem {
 
 const tocItems: TocItem[] = [
   { id: 'why-keploy', label: '1. Why Keploy for Go Engineers?' },
-  { id: 'sample-app', label: '2. The Sample Architecture (Gin + Mongo)' },
-  { id: 'architecture', label: '3. Keploy Internals: eBPF & Wire Proxy' },
-  { id: 'hands-on-guide', label: '4. Step-by-Step Hands-On Guide' },
-  { id: 'step-1-network', label: '— Setup Docker Network & MongoDB' },
-  { id: 'step-2-build', label: '— Build the Go Container Image' },
-  { id: 'step-3-record', label: '— Record Real API Traffic' },
-  { id: 'step-4-replay', label: '— Replay Tests with Zero Dependencies' },
-  { id: 'troubleshooting', label: '5. Real-World Troubleshooting' },
-  { id: 'anatomy', label: '6. Anatomy of Keploy Artifacts' },
-  { id: 'evidence', label: '7. Execution Evidence & Verification' },
-  { id: 'devrel-takeaways', label: '8. DevRel Key Takeaways' },
+  { id: 'sample-app', label: '2. The Sample App (Gin + Mongo)' },
+  { id: 'architecture', label: '3. How Keploy Works' },
+  { id: 'hands-on-guide', label: '4. Step-by-Step Guide' },
+  { id: 'step-1-network', label: '— Docker Network & MongoDB' },
+  { id: 'step-2-build', label: '— Clone & Build' },
+  { id: 'step-3-record', label: '— Record API Traffic' },
+  { id: 'step-4-replay', label: '— Replay Tests' },
+  { id: 'troubleshooting', label: '5. Real Issues Encountered' },
+  { id: 'anatomy', label: '6. Artifact Anatomy' },
+  { id: 'evidence', label: '7. Generated Test Artifacts' },
+  { id: 'devrel-takeaways', label: '8. Key Takeaways' },
 ];
 
 export default function TableOfContents() {
