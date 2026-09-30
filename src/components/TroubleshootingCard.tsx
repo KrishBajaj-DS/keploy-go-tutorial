@@ -22,7 +22,7 @@ const troubleItems: TroubleItem[] = [
     badge: 'DNS Resolution',
     badgeColor: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
     symptom: 'The Gin application failed to connect to MongoDB on the Docker bridge network: "server selection error: server selection timeout, current topology: { Type: Unknown, Servers: [{ Addr: mongodb:27017, Type: Unknown }] }".',
-    rootCause: 'In main.go, the connection string uses "mongoDb:27017". The official Go mongo-driver parses URIs according to RFC 3986 and normalizes the hostname to lowercase "mongodb". When the Docker container was only registered as "mongoDb", Docker\'s internal DNS (127.0.0.11) couldn\'t resolve the lowercase query.',
+    rootCause: 'The MongoDB connection hostname and Docker network alias did not resolve consistently in my environment. Adding both mongodb and mongoDb as network aliases resolved the connection issue.',
     solution: 'Attach both casing variants as network aliases on the MongoDB container so Docker DNS responds to either form.',
     codeSnippet: 'docker run -d --name mongodb --network keploy-network \\\n  --network-alias mongodb --network-alias mongoDb \\\n  -p 27017:27017 mongo',
     lang: 'bash',
@@ -69,7 +69,7 @@ export default function TroubleshootingCard() {
             Real-World Issues Encountered
           </h4>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Genuine problems hit while setting up and running this quickstart — not hypothetical.
+            Issues encountered while reproducing and investigating the quickstart.
           </p>
         </div>
       </div>

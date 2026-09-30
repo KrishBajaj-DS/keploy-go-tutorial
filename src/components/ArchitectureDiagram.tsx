@@ -83,7 +83,7 @@ export default function ArchitectureDiagram() {
           <p className="text-xs text-slate-600 dark:text-slate-300 mt-2">
             {mode === 'record'
               ? 'Keploy attaches to network sockets via kernel hooks to record HTTP & outbound MongoDB requests.'
-              : 'Keploy intercepts Mongo socket read/write calls and mocks them directly from YAML!'}
+              : 'During test replay, Keploy intercepts the application\'s external dependency traffic and uses the recorded MongoDB interactions as mocks.'}
           </p>
           <div className="mt-4 px-2.5 py-1 rounded bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-300 text-[11px] font-mono">
             Docker Network: keploy-network
@@ -104,7 +104,7 @@ export default function ArchitectureDiagram() {
           <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">
             {mode === 'record'
               ? 'Real queries (OpMsg, insert, find) execute on MongoDB and responses are serialized into mocks.yaml.'
-              : 'Database container is completely unnecessary! Keploy serves BSON packets from recorded wire files.'}
+              : 'During test replay, the live database is bypassed as Keploy serves recorded BSON responses to the application\'s queries.'}
           </p>
           <div className="mt-4 px-2.5 py-1 rounded bg-purple-100/60 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[11px] font-mono">
             {mode === 'record' ? 'Live BSON Wire Traffic' : 'Zero-Dependency CI'}

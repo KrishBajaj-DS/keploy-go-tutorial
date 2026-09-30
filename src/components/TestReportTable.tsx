@@ -44,7 +44,7 @@ export default function TestReportTable() {
             Keploy-Generated Test Artifacts
           </h4>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Pre-recorded interactions from <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">keploy/test-set-0/</code> (Keploy sample repo, June 2024).
+            Source: Official Keploy <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded">samples-go/gin-mongo</code> sample artifacts (June 2024).
           </p>
         </div>
 

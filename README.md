@@ -34,7 +34,7 @@ The tutorial explains what Keploy does, walks through the `gin-mongo` quickstart
 
 ```bash
 # Clone this repository
-git clone https://github.com/<your-username>/keploy-go-tutorial.git
+git clone https://github.com/KrishBajaj-DS/keploy-go-tutorial.git
 cd keploy-go-tutorial
 
 # Install dependencies
@@ -56,5 +56,5 @@ npm run start
 
 ## 📄 Deliverables
 
-- **GitHub Repository:** _(this repo)_
-- **Vercel Deployment:** _(deploy via Vercel import)_
+- **GitHub Repository:** [https://github.com/KrishBajaj-DS/keploy-go-tutorial](https://github.com/KrishBajaj-DS/keploy-go-tutorial)
+- **Live Documentation:** [https://keploy-go-tutorial-psi.vercel.app](https://keploy-go-tutorial-psi.vercel.app)
